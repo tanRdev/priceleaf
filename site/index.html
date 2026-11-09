@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Update prices in a PDF catalog from a CSV. Free and private. Your files stay in your browser."
+    />
+    <meta name="theme-color" content="#f7f8f4" />
+    <title>Priceleaf · PDF catalog price editor</title>
+    <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="vendor/pdf-lib.min.js"></script>
+    <script defer src="vendor/papaparse.min.js"></script>
+    <script type="module" src="app.mjs"></script>
+  </head>
+  <body>
+    <a href="#workspace" class="skip">Skip to editor</a>
+    <header class="topbar">
+      <a class="brand" href="./"
+        ><img src="assets/logo.svg" alt="" width="28" height="28" />
+        Priceleaf</a
+      >
+      <span class="privacy"
+        ><span class="dot"></span> Files stay in your browser</span
+      >
+    </header>
+    <main id="workspace">
+      <section class="intro">
+        <div class="intro-copy">
+          <h1>Update prices in a PDF catalog</h1>
+          <p>
+            Bring a PDF and a CSV. Match products by code, review the changes,
+            and download the updated catalog.
+          </p>
+        </div>
+        <figure class="sample">
+          <figcaption>
+            <span>Sample change report</span
+            ><span class="sample-file">catalog.pdf</span>
+          </figcaption>
+          <table aria-label="Example prices before and after an update">
+            <thead>
+              <tr>
+                <th scope="col">Product</th>
+                <th scope="col">Current</th>
+                <th scope="col">New</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">NL-001</th>
+                <td>12.00</td>
+                <td>13.50</td>
+              </tr>
+              <tr>
+                <th scope="row">NL-002</th>
+                <td>12.00</td>
+                <td>14.00</td>
+              </tr>
+              <tr>
+                <th scope="row">NL-003</th>
+                <td>8.50</td>
+                <td>9.25</td>
+              </tr>
+            </tbody>
+          </table>
+        </figure>
+      </section>
+      <nav aria-label="Update progress">
+        <ol class="steps">
+          <li aria-current="step"><span>01</span> Files</li>
+          <li><span>02</span> Match columns</li>
+          <li><span>03</span> Review</li>
+          <li><span>04</span> Save</li>
+        </ol>
+        <button id="reset" class="quiet" type="button" hidden>
+          Start over
+        </button>
+      </nav>
+      <p id="error" class="notice error" role="alert" hidden></p>
+      <p id="busy" class="notice" role="status" hidden></p>
+      <div id="editor" class="workspace">
+        <section id="files" aria-labelledby="files-title">
+          <h2 id="files-title" tabindex="-1">Add your files</h2>
+          <p class="muted">
+            Choose a text-based catalog PDF and a CSV price sheet.
+          </p>
+          <div class="file-grid">
+            <label class="drop" id="pdf-drop">
+              <input type="file" id="pdf-input" accept=".pdf,application/pdf" />
+              <span class="file-icon" aria-hidden="true">PDF</span>
+              <strong>Catalog PDF</strong>
+              <span id="pdf-name" class="muted"
+                >Drop a file or click to choose</span
+              >
+              <small>Up to 25 MiB and 50 pages</small>
+            </label>
+            <label class="drop" id="csv-drop">
+              <input type="file" id="csv-input" accept=".csv,.tsv,text/csv" />
+              <span class="file-icon" aria-hidden="true">CSV</span>
+              <strong>Price sheet</strong>
+              <span id="csv-name" class="muted"
+                >Drop a file or click to choose</span
+              >
+              <small>Up to 1,000 changes</small>
+            </label>
+          </div>
+          <div class="actions">
+            <div class="secondary-actions">
+              <button type="button" id="example" class="secondary">
+                Try an example
+              </button>
+              <a href="assets/price-template.csv" download>CSV template</a>
+            </div>
+            <button type="button" id="continue" class="primary" disabled>
+              Continue <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </section>
+        <section id="mapping" aria-labelledby="mapping-title" hidden>
+          <h2 id="mapping-title" tabindex="-1">Match your columns</h2>
+          <p class="muted">
+            Tell Priceleaf which columns contain the product code and prices.
+          </p>
+          <div class="mapping-grid" id="mapping-fields"></div>
+          <div class="table-scroll"><table id="csv-preview"></table></div>
+          <div class="actions">
+            <button type="button" id="back-files" class="secondary">
+              Back to files
+            </button>
+            <button type="button" id="check" class="primary">
+              Check changes
+            </button>
+          </div>
+        </section>
+        <section id="review" aria-labelledby="review-title" hidden>
+          <div class="review-head">
+            <div>
+              <h2 id="review-title" tabindex="-1">Review your changes</h2>
+              <p class="muted" id="summary"></p>
+            </div>
+            <label class="filter"
+              ><input id="flagged" type="checkbox" /> Flagged only</label
+            >
+          </div>
+          <div class="review-grid">
+            <div class="rows">
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Current</th>
+                      <th>New</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="changes"></tbody>
+                </table>
+              </div>
+              <div id="row-detail" class="row-detail" aria-live="polite"></div>
+            </div>
+            <div class="preview">
+              <div class="preview-tools">
+                <label for="page">Page</label
+                ><select id="page"></select>
+                <label class="sr-only" for="zoom">Preview zoom</label>
+                <select id="zoom">
+                  <option value="1">Fit width</option>
+                  <option value="1.5">150%</option>
+                  <option value="2">200%</option>
+                </select>
+              </div>
+              <div class="page-scroll">
+                <div id="page-frame" class="page-frame">
+                  <canvas id="canvas" aria-label="Catalog page"></canvas>
+                  <div id="marks"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="actions">
+            <div class="secondary-actions">
+              <button type="button" id="back-map" class="secondary">
+                Back to columns
+              </button>
+              <button type="button" id="recheck" class="secondary">
+                Check again
+              </button>
+            </div>
+            <button type="button" id="verify" class="primary" disabled>
+              Verify and prepare PDF
+            </button>
+          </div>
+        </section>
+        <section id="done" aria-labelledby="done-title" hidden>
+          <span class="success-mark" aria-hidden="true">✓</span>
+          <h2 id="done-title" tabindex="-1">Your catalog is ready</h2>
+          <p id="result-summary" class="muted"></p>
+          <div class="actions">
+            <a class="secondary" id="report-download" download
+              >Download change report</a
+            >
+            <a class="primary" id="pdf-download" download
+              >Download verified PDF <span aria-hidden="true">↓</span></a
+            >
+          </div>
+        </section>
+      </div>
+      <aside class="notes" aria-label="Supported files and privacy">
+        <div>
+          <h3>Which PDFs work?</h3>
+          <p>
+            Use a text-based PDF with a unique product code beside each price.
+            The editor flags scanned pages, forms, and text it cannot safely
+            replace.
+          </p>
+        </div>
+        <div>
+          <h3>Where do my files go?</h3>
+          <p>
+            Priceleaf reads and edits files in this tab. There are no uploads,
+            accounts, or analytics. Close the tab to clear the workspace.
+          </p>
+        </div>
+      </aside>
+    </main>
+    <footer><span>Priceleaf</span><span>Free to use · No sign-in</span></footer>
+  </body>
+</html>

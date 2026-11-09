@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Priceleaf">
+  <rect width="64" height="64" rx="16" fill="#28533d"/>
+  <g transform="rotate(-28 32 33)">
+    <clipPath id="leaf">
+      <path d="M32 13C22 17.5 15.5 28 16.8 39.2 18.2 50.2 24.4 55 32 55 39.6 55 45.8 50.2 47.2 39.2 48.5 28 42 17.5 32 13z"/>
+    </clipPath>
+    <g clip-path="url(#leaf)">
+      <rect x="0" y="0" width="32" height="64" fill="#d5eda9"/>
+      <rect x="32" y="0" width="32" height="64" fill="#f4f8e7"/>
+      <path d="M32 60V6" fill="none" stroke="#28533d" stroke-width="2.5" stroke-linecap="butt"/>
+      <path d="M32 37c-6-1.2-9.5-5-12.5-10M32 31c6-1.2 9.5-5 12.5-10" fill="none" stroke="#28533d" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>

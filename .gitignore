@@ -1,0 +1,13 @@
+node_modules/
+build/
+dist/
+.vercel
+.DS_Store
+
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+private/
+output/
+*.spec
