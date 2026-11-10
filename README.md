@@ -2,7 +2,9 @@
 
 # Priceleaf
 
-A finished catalog is a designed PDF. The new prices live in a spreadsheet. [Priceleaf](https://priceleaf-catalog.vercel.app/) writes those prices into the PDF and leaves the rest of the page alone. It runs in the browser. The catalog and the price sheet stay in the tab.
+[Try Priceleaf](https://priceleaf-catalog.vercel.app/)
+
+A finished catalog is a designed PDF. The new prices live in a spreadsheet. Priceleaf writes those prices into the PDF and leaves the rest of the page alone. It runs in the browser. The catalog and the price sheet stay in the tab.
 
 You bring the PDF and a CSV with a product code, the current price, and the new price. Priceleaf finds that code on the page and replaces the price in the original font, at the original position. You then download two files. The updated PDF is the catalog. The CSV is a change report: product code, old price, new price, and page number.
 
